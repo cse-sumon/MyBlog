@@ -75,8 +75,12 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 
 // Add authentication with JWT
-var jwtKey = builder.Configuration.GetValue<string>("Jwt:Key") ?? "ThisIsASecretKeyForDevOnlyReplaceInProduction";
-var jwtIssuer = builder.Configuration.GetValue<string>("Jwt:Issuer") ?? "MyBlogApi";
+//var jwtKey = builder.Configuration.GetValue<string>("Jwt:Key") ?? "ThisIsASecretKeyForDevOnlyReplaceInProduction";
+//var jwtIssuer = builder.Configuration.GetValue<string>("Jwt:Issuer") ?? "MyBlogApi";
+
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "ThisIsASecretKeyForDevOnlyReplaceInProduction";
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "MyBlogApi";
+
 var keyBytes = System.Text.Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>

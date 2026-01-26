@@ -75,14 +75,14 @@ namespace MyBlog.API.HostedServices
                 }
 
                 // Create default admin user (lookup by UserName since auth uses UserName)
-                var adminUserName = _configuration.GetValue<string>("Admin:UserName") ?? "admin";
-                var adminEmail = _configuration.GetValue<string>("Admin:Email") ?? "admin@gmail.com";
-                var adminPassword = _configuration.GetValue<string>("Admin:Password") ?? "Admin@123";
+                var adminUserName = _configuration["Admin:UserName"] ?? "admin";
+                var adminEmail = _configuration["Admin:Email"] ?? "admin@gmail.com";
+                var adminPassword = _configuration["Admin:Password"] ?? "Admin@123";
 
                 var adminUser = await userManager.FindByNameAsync(adminUserName);
                 if (adminUser == null)
                 {
-                    adminUser = new ApplicationUser { UserName = adminUserName, Email = adminEmail };
+                    adminUser = new ApplicationUser { FullName = adminUserName, UserName = adminUserName, Email = adminEmail };
                     var createResult = await userManager.CreateAsync(adminUser, adminPassword);
                     if (createResult.Succeeded)
                     {
@@ -100,14 +100,15 @@ namespace MyBlog.API.HostedServices
                 }
 
                 // Create default regular user
-                var userUserName = _configuration.GetValue<string>("User:UserName") ?? "user";
-                var userEmail = _configuration.GetValue<string>("User:Email") ?? "user@gmail.com";
-                var userPassword = _configuration.GetValue<string>("User:Password") ?? "User@123";
+                var userUserName = _configuration["User:UserName"] ?? "user";
+                var userEmail = _configuration["User:Email"] ?? "user@gmail.com";
+                var userPassword = _configuration["User:Password"] ?? "User@123";
+
 
                 var regularUser = await userManager.FindByNameAsync(userUserName);
                 if (regularUser == null)
                 {
-                    regularUser = new ApplicationUser { UserName = userUserName, Email = userEmail };
+                    regularUser = new ApplicationUser { FullName = userUserName, UserName = userUserName, Email = userEmail };
                     var createUserResult = await userManager.CreateAsync(regularUser, userPassword);
                     if (createUserResult.Succeeded)
                     {

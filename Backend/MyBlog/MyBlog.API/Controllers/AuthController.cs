@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authorization;
 
 namespace MyBlog.API.Controllers
 {
@@ -28,6 +29,7 @@ namespace MyBlog.API.Controllers
         public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
+            
             // Ensure username and email are unique
             if (await _userManager.FindByNameAsync(dto.UserName) != null)
             {
@@ -41,7 +43,7 @@ namespace MyBlog.API.Controllers
 
             var user = new ApplicationUser 
             {
-                FullName=dto.FullName, 
+                FullName = dto.FullName, 
                 UserName = dto.UserName, 
                 Email = dto.Email 
             };
@@ -57,7 +59,7 @@ namespace MyBlog.API.Controllers
 
             await _userManager.AddToRoleAsync(user, roleName);
 
-            return CreatedAtAction(null, null);
+            return Ok(new { message = "Registration successful" });
         }
 
         [HttpPost("login")]
@@ -78,29 +80,88 @@ namespace MyBlog.API.Controllers
             if (!await _userManager.CheckPasswordAsync(user, dto.Password)) return Unauthorized();
 
             var roles = await _userManager.GetRolesAsync(user);
-
             var token = GenerateJwtToken(user, roles);
 
-            return Ok(new { token });
+            return Ok(new 
+            { 
+                token,
+                user = new
+                {
+                    id = user.Id,
+                    userName = user.UserName,
+                    email = user.Email,
+                    fullName = user.FullName,
+                    roles
+                }
+            });
+        }
+
+        [Authorize]
+        [HttpGet("currentUser")]
+        public async Task<IActionResult> CurrentUser()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) 
+                         ?? User.FindFirstValue(JwtRegisteredClaimNames.Sub);
+            
+            if (string.IsNullOrEmpty(userId)) return Unauthorized();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return Unauthorized();
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            return Ok(new
+            {
+                id = user.Id,
+                userName = user.UserName,
+                email = user.Email,
+                fullName = user.FullName,
+                roles
+            });
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpGet("users")]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var users = _userManager.Users.ToList();
+            var userList = new List<object>();
+            
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                userList.Add(new
+                {
+                    id = user.Id,
+                    userName = user.UserName,
+                    email = user.Email,
+                    fullName = user.FullName,
+                    roles
+                });
+            }
+
+            return Ok(userList);
         }
 
         private string GenerateJwtToken(ApplicationUser user, IList<string> roles)
         {
-            var key = _config.GetValue<string>("Jwt:Key") ?? "ThisIsASecretKeyForDevOnlyReplaceInProduction";
-            var issuer = _config.GetValue<string>("Jwt:Issuer") ?? "MyBlogApi";
+            var key = _config["Jwt:Key"] ?? "ThisIsASecretKeyForDevOnlyReplaceInProduction";
+            var issuer = _config["Jwt:Issuer"] ?? "MyBlogApi";
+            var audience = _config["Jwt:Audience"] ?? "MyBlogClient";
+
             var keyBytes = Encoding.UTF8.GetBytes(key);
 
             var claims = new List<Claim>
             {
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-                new Claim("name", user.FullName ?? user.UserName)
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName ?? string.Empty),
+                new Claim(ClaimTypes.Name, user.FullName ?? user.UserName ?? string.Empty)
             };
 
-            foreach (var r in roles)
+            foreach (var role in roles)
             {
-                claims.Add(new Claim(ClaimTypes.Role, r));
+                claims.Add(new Claim(ClaimTypes.Role, role));
             }
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -108,6 +169,7 @@ namespace MyBlog.API.Controllers
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddHours(6),
                 Issuer = issuer,
+                Audience = audience,
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256)
             };
 

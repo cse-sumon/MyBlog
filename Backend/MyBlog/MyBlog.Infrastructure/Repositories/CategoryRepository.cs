@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using MyBlog.Application.Interfaces.Repositories;
@@ -18,12 +19,17 @@ namespace MyBlog.Infrastructure.Repositories
 
         public async Task<List<Category>> GetAllAsync()
         {
-            return await _context.Categories.AsNoTracking().ToListAsync();
+            return await _context.Categories
+                .Where(c => c.IsActive)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
         public async Task<Category?> GetByIdAsync(int id)
         {
-            return await _context.Categories.FindAsync(id);
+            return await _context.Categories
+                .Where(c => c.IsActive)
+                .FirstOrDefaultAsync(c => c.Id == id);
         }
 
         public async Task AddAsync(Category category)

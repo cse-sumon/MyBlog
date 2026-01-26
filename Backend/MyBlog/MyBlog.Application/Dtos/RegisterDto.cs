@@ -1,4 +1,4 @@
-namespace MyBlog.API.Models
+namespace MyBlog.Application.Dtos
 {
     public class RegisterDto
     {

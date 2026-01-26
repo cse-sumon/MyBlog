@@ -1,0 +1,710 @@
+# 🎨 MyBlog Angular - Visual Diagrams
+
+Visual representations of the application architecture, flows, and structure.
+
+---
+
+## 🏗️ Application Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      MyBlog Angular App                      │
+└─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┼───────────────┐
+              │               │               │
+         ┌────▼────┐     ┌────▼────┐    ┌────▼────┐
+         │  Auth   │     │Dashboard│    │ Shared  │
+         │ Feature │     │ Feature │    │ Module  │
+         └─────────┘     └─────────┘    └─────────┘
+              │               │
+        ┌─────┴─────┐   ┌─────┴─────┐
+        │           │   │           │
+    ┌───▼───┐   ┌───▼───┐   ┌───▼───┐
+    │Login  │   │Register│   │Category│
+    │Component│ │Component│ │Component│
+    └───────┘   └───────┘   └───────┘
+                              │
+                         ┌────▼────┐
+                         │ Layout  │
+                         │Component│
+                         └─────────┘
+```
+
+---
+
+## 🔄 Authentication Flow Diagram
+
+```
+┌──────────┐
+│  User    │
+└────┬─────┘
+     │
+     ▼
+┌──────────────────┐
+│ Login Component  │
+│  - Enter creds   │
+└────┬─────────────┘
+     │
+     ▼
+┌──────────────────┐
+│  Auth Service    │
+│  - login()       │
+└────┬─────────────┘
+     │
+     ▼
+┌──────────────────┐
+│ HTTP Request     │
+│ POST /api/Auth   │
+│     /Login       │
+└────┬─────────────┘
+     │
+     ▼
+┌──────────────────┐
+│ Auth Interceptor │
+│ (No token needed)│
+└────┬─────────────┘
+     │
+     ▼
+┌──────────────────┐
+│   Backend API    │
+│ Validates creds  │
+└────┬─────────────┘
+     │
+     ▼
+┌──────────────────┐
+│  Response        │
+│ { token, user }  │
+└────┬─────────────┘
+     │
+     ▼
+┌──────────────────┐
+│  Auth Service    │
+│ - Save token     │
+│ - Save user      │
+│ - Update state   │
+└────┬─────────────┘
+     │
+     ▼
+┌──────────────────┐
+│  Router          │
+│ Navigate to      │
+│ /dashboard       │
+└────┬─────────────┘
+     │
+     ▼
+┌──────────────────┐
+│  Auth Guard      │
+│ Check token      │
+│ ✅ Valid         │
+└────┬─────────────┘
+     │
+     ▼
+┌──────────────────┐
+│ Dashboard        │
+│ Component        │
+│ ✅ Access Granted│
+└──────────────────┘
+```
+
+---
+
+## 🛡️ Protected Route Access Flow
+
+```
+User Navigates to Protected Route
+           │
+           ▼
+    ┌──────────────┐
+    │ Auth Guard   │
+    │ canActivate()│
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────┐
+    │ Check Token  │
+    │ in localStorage│
+    └──────┬───────┘
+           │
+    ┌──────┴──────┐
+    │             │
+    ▼             ▼
+┌────────┐   ┌─────────┐
+│ Valid  │   │ Invalid │
+│ Token  │   │ Token   │
+└───┬────┘   └────┬────┘
+    │             │
+    ▼             ▼
+┌─────────┐   ┌──────────┐
+│ Allow   │   │ Redirect │
+│ Access  │   │ to /login│
+└─────────┘   └──────────┘
+```
+
+---
+
+## 📊 Category CRUD Flow
+
+```
+┌────────────────────┐
+│ Category Component │
+│ ngOnInit()         │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ Category Service   │
+│ getAll()           │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ HTTP GET Request   │
+│ /api/Category      │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ Auth Interceptor   │
+│ Add JWT Token      │
+│ Authorization:     │
+│ Bearer {token}     │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ Backend API        │
+│ Validate Token     │
+│ Return Categories  │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ Component          │
+│ Display in Table   │
+└────────────────────┘
+
+User Clicks "Create"
+          │
+          ▼
+┌────────────────────┐
+│ Show Form          │
+│ with Validation    │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ User Submits       │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ Category Service   │
+│ create(data)       │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ HTTP POST          │
+│ with Token         │
+└─────────┬──────────┘
+          │
+          ▼
+┌────────────────────┐
+│ Success/Error      │
+│ Display Message    │
+│ Reload Categories  │
+└────────────────────┘
+```
+
+---
+
+## 🔐 HTTP Interceptor Flow
+
+```
+Component makes HTTP Request
+           │
+           ▼
+    ┌──────────────┐
+    │HttpClient.get│
+    │   .post      │
+    │   .put       │
+    │   .delete    │
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────┐
+    │Auth          │
+    │Interceptor   │
+    │intercept()   │
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────┐
+    │Get Token from│
+    │AuthService   │
+    └──────┬───────┘
+           │
+    ┌──────┴──────┐
+    │             │
+    ▼             ▼
+┌────────┐   ┌─────────┐
+│ Token  │   │   No    │
+│ Exists │   │ Token   │
+└───┬────┘   └────┬────┘
+    │             │
+    ▼             ▼
+┌─────────────┐   │
+│Clone Request│   │
+│Add Header:  │   │
+│Authorization│   │
+│Bearer TOKEN │   │
+└───┬─────────┘   │
+    │             │
+    └─────┬───────┘
+          │
+          ▼
+    ┌──────────────┐
+    │Send to Server│
+    └──────┬───────┘
+           │
+           ▼
+    ┌──────────────┐
+    │   Response   │
+    └──────┬───────┘
+           │
+    ┌──────┴──────┐
+    │             │
+    ▼             ▼
+┌─────────┐   ┌──────────┐
+│Success  │   │Error 401 │
+│200, 201 │   │or 403    │
+└────┬────┘   └────┬─────┘
+     │             │
+     ▼             ▼
+┌─────────┐   ┌──────────┐
+│ Return  │   │ Logout & │
+│ Data    │   │ Redirect │
+└─────────┘   └──────────┘
+```
+
+---
+
+## 📁 Folder Structure Diagram
+
+```
+MyBlog.Client/
+│
+├── src/
+│   ├── app/                    🎯 Application Root
+│   │   ├── app.config.ts      📝 Global Configuration
+│   │   ├── app.routes.ts      🛣️  Routing Definition
+│   │   └── app.ts             📦 Root Component
+│   │
+│   ├── core/                   🔧 Core Module (Singleton)
+│   │   ├── guards/            🛡️  Route Protection
+│   │   │   └── auth.guard.ts
+│   │   ├── interceptors/      🔄 HTTP Interceptors
+│   │   │   └── auth.interceptor.ts
+│   │   ├── models/            📋 TypeScript Interfaces
+│   │   │   ├── auth-models.ts
+│   │   │   └── category-model.ts
+│   │   └── services/          ⚙️  Business Logic
+│   │       ├── auth.service.ts
+│   │       └── category.service.ts
+│   │
+│   ├── features/               🎨 Feature Modules
+│   │   ├── auth/              🔐 Authentication
+│   │   │   ├── login/
+│   │   │   │   ├── login.component.ts
+│   │   │   │   ├── login.component.html
+│   │   │   │   └── login.component.css
+│   │   │   └── register/
+│   │   │       ├── register.component.ts
+│   │   │       ├── register.component.html
+│   │   │       └── register.component.css
+│   │   │
+│   │   └── dashboard/         📊 Dashboard
+│   │       ├── layout/
+│   │       │   ├── dashboard-layout.component.*
+│   │       │   └── dashboard-home.component.*
+│   │       └── category/
+│   │           └── category.component.*
+│   │
+│   ├── shared/                 🔄 Shared Components
+│   │   └── components/
+│   │
+│   └── config/                 ⚙️  Configuration
+│       ├── environment.ts
+│       └── environment.prod.ts
+│
+└── Documentation Files         📚 Guides
+    ├── README.md              📖 Main Documentation Index
+    ├── QUICKSTART.md          🚀 Quick Start Guide
+    ├── ARCHITECTURE.md        🏗️  Technical Architecture
+    ├── STRUCTURE.md           📂 File Structure
+    ├── COMMANDS.md            💻 Commands Reference
+    ├── SUMMARY.md             📊 Implementation Summary
+    ├── CHECKLIST.md           ✅ Complete Checklist
+    └── DIAGRAMS.md            🎨 This File
+```
+
+---
+
+## 🌊 Data Flow Architecture
+
+```
+┌─────────────────────────────────────────────────────┐
+│                    User Interface                    │
+│              (Components + Templates)                │
+└──────────────┬──────────────────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────────────┐
+│                   Presentation Layer                 │
+│      ┌──────────┐  ┌──────────┐  ┌──────────┐      │
+│      │  Login   │  │Dashboard │  │ Category │      │
+│      │Component │  │Component │  │Component │      │
+│      └────┬─────┘  └────┬─────┘  └────┬─────┘      │
+└───────────┼─────────────┼─────────────┼─────────────┘
+            │             │             │
+            ▼             ▼             ▼
+┌─────────────────────────────────────────────────────┐
+│                   Business Logic Layer               │
+│      ┌──────────┐              ┌──────────┐         │
+│      │   Auth   │              │ Category │         │
+│      │ Service  │              │ Service  │         │
+│      └────┬─────┘              └────┬─────┘         │
+└───────────┼──────────────────────────┼───────────────┘
+            │                          │
+            ▼                          ▼
+┌─────────────────────────────────────────────────────┐
+│                   HTTP Layer                         │
+│      ┌─────────────────────────────────────┐        │
+│      │         Auth Interceptor            │        │
+│      │   (Add JWT Token to all requests)   │        │
+│      └──────────────┬──────────────────────┘        │
+└─────────────────────┼───────────────────────────────┘
+                      │
+                      ▼
+┌─────────────────────────────────────────────────────┐
+│                   Backend API                        │
+│         https://localhost:44390/api                  │
+│  ┌──────────────┐          ┌──────────────┐         │
+│  │ Auth         │          │ Category     │         │
+│  │ Endpoints    │          │ Endpoints    │         │
+│  └──────────────┘          └──────────────┘         │
+└─────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔄 Component Communication
+
+```
+┌─────────────────────────────────────────┐
+│         App Component (Root)            │
+│         <router-outlet>                 │
+└──────────────┬──────────────────────────┘
+               │
+     ┌─────────┴────────┐
+     │                  │
+     ▼                  ▼
+┌────────────┐    ┌────────────────────┐
+│   Login    │    │ Dashboard Layout   │
+│ Component  │    │    Component       │
+└────────────┘    └──────┬─────────────┘
+                         │
+              ┌──────────┴──────────┐
+              │                     │
+              ▼                     ▼
+     ┌────────────────┐    ┌────────────────┐
+     │ Dashboard Home │    │   Category     │
+     │   Component    │    │   Component    │
+     └────────────────┘    └────────────────┘
+
+All components share:
+    │
+    ▼
+┌─────────────────┐
+│  Auth Service   │ ← Observable: user$
+│  (BehaviorSubject) isAuthenticated$
+└─────────────────┘
+```
+
+---
+
+## 🎯 Routing Structure
+
+```
+/
+├── login                    (Public)
+│   └── LoginComponent
+│
+├── register                 (Public)
+│   └── RegisterComponent
+│
+└── dashboard               (Protected by AuthGuard)
+    ├── DashboardLayoutComponent
+    │   ├── Sidebar
+    │   ├── Header
+    │   └── <router-outlet>
+    │       │
+    │       ├── (index)
+    │       │   └── DashboardHomeComponent
+    │       │
+    │       └── category    (Protected by AuthGuard)
+    │           └── CategoryComponent
+    │
+    └── ** (wildcard)
+        └── Redirect to dashboard
+```
+
+---
+
+## 🔐 Security Layers
+
+```
+┌─────────────────────────────────────────────┐
+│          User Attempts Access               │
+└──────────────┬──────────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────┐
+│         Layer 1: Route Guard                │
+│  • Check if token exists                    │
+│  • Check if token is valid                  │
+│  • Check required roles (if any)            │
+│  ✅ Pass → Continue                         │
+│  ❌ Fail → Redirect to /login               │
+└──────────────┬──────────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────┐
+│      Layer 2: HTTP Interceptor              │
+│  • Inject JWT token in headers              │
+│  • Set Authorization: Bearer {token}        │
+│  ✅ Token added → Send request              │
+└──────────────┬──────────────────────────────┘
+               │
+               ▼
+┌─────────────────────────────────────────────┐
+│       Layer 3: Backend Validation           │
+│  • Validate JWT signature                   │
+│  • Check expiration                         │
+│  • Verify user permissions                  │
+│  ✅ Valid → Return data                     │
+│  ❌ Invalid → 401 Unauthorized               │
+└──────────────┬──────────────────────────────┘
+               │
+      ┌────────┴────────┐
+      │                 │
+      ▼                 ▼
+┌──────────┐      ┌──────────┐
+│ Success  │      │  Error   │
+│ 200/201  │      │ 401/403  │
+└────┬─────┘      └────┬─────┘
+     │                 │
+     ▼                 ▼
+┌──────────┐      ┌──────────┐
+│ Display  │      │  Logout  │
+│  Data    │      │ Redirect │
+└──────────┘      └──────────┘
+```
+
+---
+
+## 📦 State Management
+
+```
+┌─────────────────────────────────────────┐
+│          AuthService State              │
+└──────────────┬──────────────────────────┘
+               │
+     ┌─────────┴─────────┐
+     │                   │
+     ▼                   ▼
+┌─────────────┐   ┌──────────────┐
+│userSubject  │   │isAuthenticated│
+│BehaviorSub. │   │BehaviorSubject│
+└──────┬──────┘   └──────┬───────┘
+       │                 │
+       ▼                 ▼
+┌─────────────┐   ┌──────────────┐
+│   user$     │   │isAuthenticated$│
+│ Observable  │   │  Observable   │
+└──────┬──────┘   └──────┬───────┘
+       │                 │
+       │  Subscribed by  │
+       │  Components     │
+       ▼                 ▼
+┌─────────────────────────────────────┐
+│  - DashboardLayoutComponent         │
+│  - DashboardHomeComponent          │
+│  - Any component needing user info  │
+└─────────────────────────────────────┘
+
+Updates triggered by:
+• Login successful
+• Register successful
+• Token validation
+• Logout
+```
+
+---
+
+## 🎨 UI Component Hierarchy
+
+```
+App (Root)
+│
+└── Router Outlet
+    │
+    ├── Login (Public Route)
+    │   ├── Form
+    │   │   ├── Username Input
+    │   │   ├── Password Input
+    │   │   └── Submit Button
+    │   └── Register Link
+    │
+    ├── Register (Public Route)
+    │   ├── Form
+    │   │   ├── Full Name Input
+    │   │   ├── Username Input
+    │   │   ├── Email Input
+    │   │   ├── Password Input
+    │   │   ├── Confirm Password Input
+    │   │   └── Submit Button
+    │   └── Login Link
+    │
+    └── Dashboard Layout (Protected)
+        ├── Sidebar
+        │   ├── Logo
+        │   ├── Menu
+        │   │   ├── Dashboard Link
+        │   │   └── Category Link
+        │   └── Logout Button
+        │
+        ├── Header
+        │   ├── Toggle Button
+        │   └── User Info
+        │
+        └── Content Area (Router Outlet)
+            │
+            ├── Dashboard Home
+            │   ├── Welcome Card
+            │   ├── Stats Grid
+            │   └── Info Section
+            │
+            └── Category
+                ├── Header
+                │   └── Add Button
+                ├── Form (if open)
+                │   ├── Name Input
+                │   ├── Description Textarea
+                │   ├── Active Checkbox
+                │   └── Buttons
+                ├── Table
+                │   ├── Headers
+                │   └── Rows
+                │       └── Action Buttons
+                └── Delete Modal (if active)
+                    ├── Message
+                    └── Buttons
+```
+
+---
+
+## 🔄 Lifecycle Diagram
+
+```
+Application Startup
+       │
+       ▼
+┌──────────────┐
+│  main.ts     │
+│  bootstrap   │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ app.config   │
+│ • Providers  │
+│ • Interceptor│
+│ • Routes     │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ App Component│
+│ • Initialize │
+└──────┬───────┘
+       │
+       ▼
+┌──────────────┐
+│ Auth Service │
+│ • Check token│
+│ • Load user  │
+└──────┬───────┘
+       │
+  ┌────┴────┐
+  │         │
+  ▼         ▼
+┌─────┐   ┌──────┐
+│Valid│   │Invalid│
+└──┬──┘   └───┬──┘
+   │          │
+   ▼          ▼
+┌────────┐ ┌──────┐
+│Dashboard│ │Login │
+└────────┘ └──────┘
+```
+
+---
+
+## 📊 Error Handling Flow
+
+```
+HTTP Request Error
+       │
+       ▼
+┌──────────────────┐
+│ Auth Interceptor │
+│  catchError()    │
+└────────┬─────────┘
+         │
+    ┌────┴────┐
+    │         │
+    ▼         ▼
+┌──────┐  ┌──────┐
+│ 401  │  │ 403  │
+└───┬──┘  └───┬──┘
+    │         │
+    ▼         ▼
+┌──────────┐ ┌──────────┐
+│ Logout   │ │ Redirect │
+│ Clear    │ │ to       │
+│ Session  │ │ Dashboard│
+└────┬─────┘ └────┬─────┘
+     │            │
+     ▼            ▼
+┌──────────┐  ┌──────────┐
+│ Navigate │  │ Show     │
+│ to /login│  │ Message  │
+└──────────┘  └──────────┘
+```
+
+---
+
+**🎨 Visual Guide Complete!**
+
+These diagrams help understand:
+- Application architecture
+- Data flow
+- Authentication process
+- Component relationships
+- Security layers
+- State management
+- UI hierarchy
+
+For detailed code explanations, see [ARCHITECTURE.md](./ARCHITECTURE.md)

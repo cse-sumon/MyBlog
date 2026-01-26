@@ -1,0 +1,180 @@
+<div class="category-container">
+  <div class="category-header">
+    <h1>Category Management</h1>
+    <button
+      class="btn btn-primary"
+      (click)="openForm()"
+      *ngIf="!showForm"
+    >
+      + Add New Category
+    </button>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="error" class="alert alert-danger">
+    {{ error }}
+  </div>
+  <div *ngIf="success" class="alert alert-success">
+    {{ success }}
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading">
+    <p>Loading categories...</p>
+  </div>
+
+  <!-- Form Section -->
+  <div *ngIf="showForm" class="form-section">
+    <div class="form-card">
+      <h2>{{ editingId ? 'Edit Category' : 'Add New Category' }}</h2>
+
+      <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()">
+        <!-- Name Field -->
+        <div class="form-group">
+          <label for="name">Category Name</label>
+          <input
+            type="text"
+            class="form-control"
+            id="name"
+            formControlName="name"
+            placeholder="Enter category name"
+            [class.is-invalid]="f['name'].touched && f['name'].errors"
+          />
+          <div *ngIf="f['name'].touched && f['name'].errors" class="invalid-feedback">
+            <div *ngIf="f['name'].errors['required']">Category name is required</div>
+            <div *ngIf="f['name'].errors['minlength']">Minimum 3 characters required</div>
+          </div>
+        </div>
+
+        <!-- Description Field -->
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea
+            class="form-control"
+            id="description"
+            formControlName="description"
+            placeholder="Enter category description"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <!-- Active Status -->
+        <div class="form-group" style="display: none;">
+          <label>
+            <input
+              type="checkbox"
+              formControlName="isActive"
+            />
+            Is Active
+          </label>
+        </div>
+
+        <!-- Buttons -->
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="submitting || categoryForm.invalid"
+          >
+            <span *ngIf="!submitting">{{ editingId ? 'Update' : 'Create' }}</span>
+            <span *ngIf="submitting">Saving...</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="closeForm()"
+            [disabled]="submitting"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Table Section -->
+  <div *ngIf="!showForm && categories.length > 0" class="table-section">
+    <div class="search-bar">
+      <div class="search-input-wrapper">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="Search..."
+          [value]="searchQuery"
+          (input)="onSearch($event)"
+        />
+        <button
+          *ngIf="searchQuery"
+          class="search-clear-btn"
+          (click)="clearSearch()"
+          title="Clear search"
+        >
+          ×
+        </button>
+      </div>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Status</th>
+          <th>Created Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let category of categories">
+          <td>{{ category.id }}</td>
+          <td>{{ category.name }}</td>
+          <td>{{ category.description || 'N/A' }}</td>
+          <td>
+            <span
+              class="badge"
+              [class]="getStatusClass(category.isActive)"
+            >
+              {{ getStatusBadge(category.isActive) }}
+            </span>
+          </td>
+          <td>{{ category.createdDate | date: 'short' }}</td>
+          <td class="actions">
+            <button
+              class="btn btn-sm btn-warning"
+              (click)="openForm(category)"
+            >
+              Edit
+            </button>
+            <button
+              class="btn btn-sm btn-danger"
+              (click)="confirmDelete(category.id)"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="!loading && categories.length === 0 && !showForm" class="empty-state">
+    <p>No categories found. Click "Add New Category" to create one.</p>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div *ngIf="deleteConfirmId !== null" class="modal-overlay">
+    <div class="modal">
+      <h3>Confirm Delete</h3>
+      <p>Are you sure you want to delete this category?</p>
+      <div class="modal-actions">
+        <button class="btn btn-danger" (click)="deleteCategory(deleteConfirmId)">
+          Delete
+        </button>
+        <button class="btn btn-secondary" (click)="cancelDelete()">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

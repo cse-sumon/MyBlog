@@ -1,0 +1,52 @@
+<div class="dashboard-wrapper">
+  <!-- Sidebar -->
+  <div class="sidebar" [class.open]="sidebarOpen">
+    <div class="logo">
+      <h1>MyBlog</h1>
+    </div>
+
+    <nav class="menu">
+      <ul>
+        <li>
+          <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            <i class="icon">📊</i>
+            Dashboard
+          </a>
+        </li>
+        <li>
+          <a routerLink="/dashboard/category" routerLinkActive="active">
+            <i class="icon">📁</i>
+            Categories
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="menu-footer">
+      <button class="btn-logout" (click)="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <header class="header">
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div class="user-info">
+        <span *ngIf="currentUser$ | async as user">
+          Welcome, <strong>{{ user.userName }}</strong>
+        </span>
+      </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

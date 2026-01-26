@@ -1,0 +1,114 @@
+<div class="register-container">
+  <div class="register-box">
+    <h2>Create Account</h2>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+      <!-- Error Message -->
+      <div *ngIf="error" class="alert alert-danger">
+        {{ error }}
+      </div>
+
+      <!-- Full Name Field -->
+      <div class="form-group">
+        <label for="fullName">Full Name</label>
+        <input
+          type="text"
+          class="form-control"
+          id="fullName"
+          formControlName="fullName"
+          placeholder="Enter your full name"
+          [class.is-invalid]="submitted && f['fullName'].errors"
+        />
+        <div *ngIf="submitted && f['fullName'].errors" class="invalid-feedback">
+          <div *ngIf="f['fullName'].errors['required']">Full name is required</div>
+          <div *ngIf="f['fullName'].errors['minlength']">Full name must be at least 3 characters</div>
+        </div>
+      </div>
+
+      <!-- Username Field -->
+      <div class="form-group">
+        <label for="userName">Username</label>
+        <input
+          type="text"
+          class="form-control"
+          id="userName"
+          formControlName="userName"
+          placeholder="Enter your username"
+          [class.is-invalid]="submitted && f['userName'].errors"
+        />
+        <div *ngIf="submitted && f['userName'].errors" class="invalid-feedback">
+          <div *ngIf="f['userName'].errors['required']">Username is required</div>
+          <div *ngIf="f['userName'].errors['minlength']">Username must be at least 3 characters</div>
+        </div>
+      </div>
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          class="form-control"
+          id="email"
+          formControlName="email"
+          placeholder="Enter your email"
+          [class.is-invalid]="submitted && f['email'].errors"
+        />
+        <div *ngIf="submitted && f['email'].errors" class="invalid-feedback">
+          <div *ngIf="f['email'].errors['required']">Email is required</div>
+          <div *ngIf="f['email'].errors['email']">Please enter a valid email</div>
+        </div>
+      </div>
+
+      <!-- Password Field -->
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="password"
+          formControlName="password"
+          placeholder="Enter your password"
+          [class.is-invalid]="submitted && f['password'].errors"
+        />
+        <div *ngIf="submitted && f['password'].errors" class="invalid-feedback">
+          <div *ngIf="f['password'].errors['required']">Password is required</div>
+          <div *ngIf="f['password'].errors['minlength']">Password must be at least 6 characters</div>
+        </div>
+      </div>
+
+      <!-- Confirm Password Field -->
+      <div class="form-group">
+        <label for="confirmPassword">Confirm Password</label>
+        <input
+          type="password"
+          class="form-control"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          placeholder="Confirm your password"
+          [class.is-invalid]="submitted && f['confirmPassword'].errors"
+        />
+        <div *ngIf="submitted && f['confirmPassword'].errors" class="invalid-feedback">
+          <div *ngIf="f['confirmPassword'].errors['required']">Please confirm your password</div>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn btn-primary btn-block"
+        [disabled]="loading"
+      >
+        <span *ngIf="!loading">Register</span>
+        <span *ngIf="loading">
+          <span class="spinner-border spinner-border-sm mr-2"></span>
+          Creating Account...
+        </span>
+      </button>
+    </form>
+
+    <!-- Login Link -->
+    <p class="text-center mt-3">
+      Already have an account? <a routerLink="/login">Login here</a>
+    </p>
+  </div>
+</div>

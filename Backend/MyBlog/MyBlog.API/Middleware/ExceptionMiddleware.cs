@@ -27,7 +27,6 @@ namespace MyBlog.API.Middleware
         {
             try
             {
-                throw new Exception("Test Error");
                 await _next(context);
             }
             catch (Exception ex)

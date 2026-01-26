@@ -101,7 +101,7 @@ namespace MyBlog.API.HostedServices
 
                 // Create default regular user
                 var userUserName = _configuration.GetValue<string>("User:UserName") ?? "user";
-                var userEmail = _configuration.GetValue<string>("User:Email") ?? "user@myblog.local";
+                var userEmail = _configuration.GetValue<string>("User:Email") ?? "user@gmail.com";
                 var userPassword = _configuration.GetValue<string>("User:Password") ?? "User@123";
 
                 var regularUser = await userManager.FindByNameAsync(userUserName);

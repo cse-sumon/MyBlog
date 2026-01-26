@@ -33,6 +33,20 @@ builder.Logging.AddSerilog(logger);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+// Enable CORS for Angular dev server
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
+
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -101,12 +115,12 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-   // app.MapOpenApi();
+    //app.MapOpenApi();
     app.UseSwagger();               // Swagger JSON endpoint
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyBlog API v1");
-        c.RoutePrefix = ""; // Swagger at root URL: http://localhost:5000/
+        c.RoutePrefix = ""; 
     });
 }
 
@@ -118,6 +132,9 @@ app.UseHttpsRedirection();
 // Use authentication & authorization
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Use CORS
+app.UseCors("CorsPolicy");
 
 // Redirect root URL to the API default route so opening https://localhost:.../ goes to /api/home
 //app.MapGet("/", () => Results.Redirect("/api/home"));

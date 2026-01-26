@@ -7,8 +7,24 @@ using MyBlog.Application.Interfaces.Services;
 using MyBlog.Infrastructure.Repositories;
 using MyBlog.Application.Services;
 using MyBlog.API.Middleware;
+using Serilog;
+using Serilog.Events;
+
+// Configure Serilog before building the host
+// Configure Serilog
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Configure Serilog
+var logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File("Logs/MyBlog_log.txt", rollingInterval: RollingInterval.Day)
+    .MinimumLevel.Error()
+    .CreateLogger();
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
+
 
 // Add services to the container.
 

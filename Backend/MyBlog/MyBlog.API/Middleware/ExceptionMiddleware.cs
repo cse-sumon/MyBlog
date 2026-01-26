@@ -1,9 +1,12 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Serilog;
+using System;
+using System.Net.Http;
 using System.Text.Json;
+using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MyBlog.API.Middleware
 {
@@ -24,25 +27,30 @@ namespace MyBlog.API.Middleware
         {
             try
             {
+                throw new Exception("Test Error");
                 await _next(context);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unhandled exception occurred while processing request");
 
+                var errorId = Guid.NewGuid().ToString();
+                //Log this Exception
+                _logger.LogError(ex, $"ERROR LOG - {errorId} : {ex.Message}");
+
+                // return a custom error response
                 context.Response.ContentType = "application/json";
                 context.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
                 var response = new
                 {
-                    title = "An unexpected error occurred.",
-                    status = context.Response.StatusCode,
-                    detail = _env.IsDevelopment() ? ex.ToString() : "An internal server error occurred."
+                    Id = errorId,
+                    ErrorMessage = _env.IsDevelopment() ? ex.ToString() : "Something went wrong! we are looking into resolving this."
                 };
 
                 var options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
                 var json = JsonSerializer.Serialize(response, options);
                 await context.Response.WriteAsync(json);
+
             }
         }
     }

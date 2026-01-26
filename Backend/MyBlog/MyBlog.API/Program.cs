@@ -6,6 +6,7 @@ using MyBlog.Application.Interfaces.Repositories;
 using MyBlog.Application.Interfaces.Services;
 using MyBlog.Infrastructure.Repositories;
 using MyBlog.Application.Services;
+using MyBlog.API.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,9 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = ""; // Swagger at root URL: http://localhost:5000/
     });
 }
+
+// Global exception middleware (should run early in the pipeline)
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 

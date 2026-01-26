@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,10 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 
 builder.Services.AddDbContext<MyBlog.Infrastructure.Data.AppDbContext>(options =>
     options.UseSqlServer(connectionString));
+
+// Register application services and repositories
+builder.Services.AddScoped<MyBlog.Application.Interfaces.Repositories.ICategoryRepository, MyBlog.Infrastructure.Repositories.CategoryRepository>();
+builder.Services.AddScoped<MyBlog.Application.Interfaces.Services.ICategoryService, MyBlog.Application.Services.CategoryService>();
 
 
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MyBlog.Domain.Entities;
 
 namespace MyBlog.Infrastructure.Data;
 
@@ -8,6 +9,6 @@ public class AppDbContext : DbContext
     {
     }
 
-    // Define DbSets here, for example:
-    // public DbSet<Post> Posts { get; set; }
+    // Define DbSets here
+    public DbSet<Category> Categories { get; set; } = null!;
 }

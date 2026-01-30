@@ -13,4 +13,6 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
 
     // Define DbSets here
     public DbSet<Category> Categories { get; set; } = null!;
+    public DbSet<Blog> Blogs { get; set; } = null!;
+    public DbSet<Comment> Comments { get; set; } = null!;
 }

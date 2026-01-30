@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MyBlog.Domain.Entities;
 
-namespace MyBlog.Application.Interfaces.Repositories
+namespace MyBlog.Application.Interfaces
 {
     public interface ICategoryRepository
     {

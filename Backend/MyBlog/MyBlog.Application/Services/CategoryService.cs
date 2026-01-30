@@ -2,14 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MyBlog.Application.Dtos;
-using MyBlog.Application.Interfaces.Services;
-using MyBlog.Application.Interfaces.Repositories;
-using MyBlog.Application.Interfaces.Repositories;
+using MyBlog.Application.Interfaces;
 using MyBlog.Domain.Entities;
 
 namespace MyBlog.Application.Services
 {
-    public class CategoryService : ICategoryService
+    public class CategoryService
     {
         private readonly ICategoryRepository _repo;
 
@@ -45,7 +43,7 @@ namespace MyBlog.Application.Services
             };
         }
 
-        public async Task<CategoryDto> CreateAsync(CreateCategoryDto dto)
+        public async Task<CategoryDto> CreateAsync(CategoryDto dto)
         {
             var entity = new Category
             {
@@ -66,7 +64,7 @@ namespace MyBlog.Application.Services
             };
         }
 
-        public async Task UpdateAsync(int id, UpdateCategoryDto dto)
+        public async Task UpdateAsync(int id, CategoryDto dto)
         {
             var entity = await _repo.GetByIdAsync(id);
             if (entity == null) return;

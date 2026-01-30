@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using MyBlog.Application.Interfaces.Repositories;
+using MyBlog.Application.Interfaces;
 using MyBlog.Domain.Entities;
 using MyBlog.Infrastructure.Data;
 

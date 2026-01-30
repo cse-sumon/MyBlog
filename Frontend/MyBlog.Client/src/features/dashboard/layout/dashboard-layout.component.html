@@ -39,7 +39,7 @@
 
       <div class="user-info">
         <span *ngIf="currentUser$ | async as user">
-          Welcome, <strong>{{ user.userName }}</strong>
+          Welcome, <strong>{{ user.fullName }}</strong>
         </span>
       </div>
     </header>

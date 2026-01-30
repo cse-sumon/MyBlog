@@ -7,11 +7,11 @@ namespace MyBlog.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class CategoryController : ControllerBase
+    public class CommentController : ControllerBase
     {
-        private readonly CategoryService _service;
+        private readonly CommentService _service;
 
-        public CategoryController(CategoryService service)
+        public CommentController(CommentService service)
         {
             _service = service;
         }
@@ -31,22 +31,29 @@ namespace MyBlog.API.Controllers
             return Ok(item);
         }
 
+        [HttpGet("blog/{blogId}")]
+        public async Task<IActionResult> GetByBlogId(int blogId)
+        {
+            var comments = await _service.GetByBlogIdAsync(blogId);
+            return Ok(comments);
+        }
+
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CategoryDto dto)
+        public async Task<IActionResult> Create([FromBody] CommentDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             var created = await _service.CreateAsync(dto);
-            return Ok(new { message = "Category created successfully", id = created.Id });
+            return Ok(new { message = "Comment created successfully", id = created.Id });
         }
 
         [Authorize]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CategoryDto dto)
+        public async Task<IActionResult> Update(int id, [FromBody] CommentDto dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
             await _service.UpdateAsync(id, dto);
-            return Ok(new { message = "Category updated successfully" });
+            return Ok(new { message = "Comment updated successfully" });
         }
 
         [Authorize]
@@ -54,7 +61,7 @@ namespace MyBlog.API.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             await _service.DeleteAsync(id);
-            return Ok(new { message = "Category deleted successfully" });
+            return Ok(new { message = "Comment deleted successfully" });
         }
     }
 }

@@ -4,34 +4,26 @@ using Microsoft.Extensions.Logging;
 using MyBlog.Infrastructure.Data;
 using MyBlog.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
-// using MyBlog.API.Extensions; // removed - seeding handled by hosted service
-using MyBlog.Application.Interfaces.Repositories;
-using MyBlog.Application.Interfaces.Services;
-using MyBlog.Infrastructure.Repositories;
-using MyBlog.Application.Services;
 using MyBlog.API.Middleware;
 using Serilog;
 using Serilog.Events;
 using MyBlog.API.HostedServices;
+using MyBlog.Application;
+using MyBlog.Infrastructure;
 
 // Configure Serilog before building the host
-// Configure Serilog
-
-var builder = WebApplication.CreateBuilder(args);
-
-//Configure Serilog
 var logger = new LoggerConfiguration()
     .WriteTo.Console()
     .WriteTo.File("Logs/MyBlog_log.txt", rollingInterval: RollingInterval.Day)
     .MinimumLevel.Error()
     .CreateLogger();
 
+var builder = WebApplication.CreateBuilder(args);
+
 builder.Logging.ClearProviders();
 builder.Logging.AddSerilog(logger);
 
-
-// Add services to the container.
-
+// Add services to the container
 builder.Services.AddControllers();
 
 // Enable CORS for Angular dev server
@@ -39,22 +31,19 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "http://localhost:5238")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
 });
 
-
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
 
 // Register EF Core DbContext using connection string from configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -62,7 +51,6 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Configure Identity
 // Configure Identity with roles
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     {
@@ -75,12 +63,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     .AddDefaultTokenProviders();
 
 // Add authentication with JWT
-//var jwtKey = builder.Configuration.GetValue<string>("Jwt:Key") ?? "ThisIsASecretKeyForDevOnlyReplaceInProduction";
-//var jwtIssuer = builder.Configuration.GetValue<string>("Jwt:Issuer") ?? "MyBlogApi";
-
 var jwtKey = builder.Configuration["Jwt:Key"] ?? "ThisIsASecretKeyForDevOnlyReplaceInProduction";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "MyBlogApi";
-
 var keyBytes = System.Text.Encoding.UTF8.GetBytes(jwtKey);
 
 builder.Services.AddAuthentication(options =>
@@ -105,14 +89,12 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
-// Register application services and repositories
-builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
-builder.Services.AddScoped<ICategoryService, CategoryService>();
+// Register all DI services from modules
+builder.Services.AddApplicationLayer();
+builder.Services.AddInfrastructureLayer();
 
 // Register startup seeder as a hosted service
-builder.Services.AddHostedService<MyBlog.API.HostedServices.StartupSeeder>();
-
-
+builder.Services.AddHostedService<StartupSeeder>();
 
 var app = builder.Build();
 
@@ -133,12 +115,15 @@ app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseHttpsRedirection();
 
+// Use CORS
+app.UseCors("CorsPolicy");
+
+// Serve static files from wwwroot (for uploaded files)
+app.UseStaticFiles();
+
 // Use authentication & authorization
 app.UseAuthentication();
 app.UseAuthorization();
-
-// Use CORS
-app.UseCors("CorsPolicy");
 
 // Redirect root URL to the API default route so opening https://localhost:.../ goes to /api/home
 //app.MapGet("/", () => Results.Redirect("/api/home"));

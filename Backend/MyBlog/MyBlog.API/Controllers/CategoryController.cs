@@ -53,6 +53,9 @@ namespace MyBlog.API.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
+            var entity = await _service.GetByIdAsync(id);
+            if (entity == null) return NotFound();
+
             await _service.DeleteAsync(id);
             return Ok(new { message = "Category deleted successfully" });
         }

@@ -1,15 +1,16 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Data.SqlClient;
-using Microsoft.Extensions.Logging;
-using MyBlog.Infrastructure.Data;
-using MyBlog.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
-using MyBlog.API.Middleware;
-using Serilog;
-using Serilog.Events;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi;
 using MyBlog.API.HostedServices;
+using MyBlog.API.Middleware;
 using MyBlog.Application;
 using MyBlog.Infrastructure;
+using MyBlog.Infrastructure.Data;
+using MyBlog.Infrastructure.Identity;
+using Serilog;
+using Serilog.Events;
 
 // Configure Serilog before building the host
 var logger = new LoggerConfiguration()
@@ -43,7 +44,31 @@ builder.Services.AddOpenApi();
 
 // Add Swagger
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+const string SecuritySchemeId = "Bearer";
+
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "MyBlog API",
+        Version = "v1"
+    });
+
+    options.AddSecurityDefinition(SecuritySchemeId, new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Description = "Enter: Bearer {token}",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference(SecuritySchemeId, document)] = new List<string>()
+    });
+});
 
 // Register EF Core DbContext using connection string from configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");

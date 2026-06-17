@@ -87,7 +87,7 @@ namespace MyBlog.API.Controllers
                 token,
                 user = new
                 {
-                    id = user.Id,
+                    //id = user.Id,
                     userName = user.UserName,
                     email = user.Email,
                     fullName = user.FullName,
